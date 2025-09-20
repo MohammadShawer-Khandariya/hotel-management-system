@@ -1,0 +1,153 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hotel-api
+  namespace: hotel-management
+  labels:
+    app: hotel-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: hotel-api
+  template:
+    metadata:
+      labels:
+        app: hotel-api
+    spec:
+      containers:
+      - name: hotel-api
+        image: hotel-management-api:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: hotel-config
+              key: NODE_ENV
+        - name: PORT
+          valueFrom:
+            configMapKeyRef:
+              name: hotel-config
+              key: PORT
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: hotel-config
+              key: LOG_LEVEL
+        - name: MONGODB_URI
+          valueFrom:
+            secretKeyRef:
+              name: hotel-secrets
+              key: MONGODB_URI
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: hotel-secrets
+              key: REDIS_URL
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: hotel-secrets
+              key: REDIS_PASSWORD
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: hotel-secrets
+              key: JWT_SECRET
+        - name: JWT_EXPIRE
+          value: "7d"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 5
+          failureThreshold: 3
+        volumeMounts:
+        - name: logs-volume
+          mountPath: /app/logs
+      volumes:
+      - name: logs-volume
+        emptyDir: {}
+      initContainers:
+      - name: wait-for-mongodb
+        image: busybox:1.35
+        command: ['sh', '-c']
+        args:
+        - |
+          until nc -z mongodb 27017; do
+            echo "Waiting for MongoDB..."
+            sleep 2
+          done
+          echo "MongoDB is ready!"
+      - name: wait-for-redis
+        image: busybox:1.35
+        command: ['sh', '-c']
+        args:
+        - |
+          until nc -z redis 6379; do
+            echo "Waiting for Redis..."
+            sleep 2
+          done
+          echo "Redis is ready!"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hotel-api-service
+  namespace: hotel-management
+  labels:
+    app: hotel-api
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 3000
+    protocol: TCP
+  selector:
+    app: hotel-api
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hotel-api-ingress
+  namespace: hotel-management
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  tls:
+  - hosts:
+    - hotel-api.yourdomain.com
+    secretName: hotel-api-tls
+  rules:
+  - host: hotel-api.yourdomain.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: hotel-api-service
+            port:
+              number: 80
