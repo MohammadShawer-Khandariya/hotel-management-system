@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hotel-backend
+  labels:
+    app: hotel-backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: hotel-backend
+  template:
+    metadata:
+      labels:
+        app: hotel-backend
+    spec:
+      containers:
+      - name: backend
+        image: gcr.io/YOUR_PROJECT/hotel-backend:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: MONGODB_URI
+          valueFrom:
+            secretKeyRef:
+              name: hotel-secrets
+              key: mongodb-uri
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: hotel-secrets
+              key: redis-url
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hotel-backend-service
+spec:
+  selector:
+    app: hotel-backend
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 3000
+  type: LoadBalancer

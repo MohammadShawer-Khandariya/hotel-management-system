@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import logger from '../utils/logger';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/hotel-management';
+const MONGODB_URI = `mongodb+srv://shawer_khandariya_db_user:${process.env.MONGO_DB_PASSWORD}@hotel-management-system.d6hyd4g.mongodb.net/?retryWrites=true&w=majority&appName=hotel-management-system-db`;
 
 // MongoDB connection options
 const mongoOptions = {
