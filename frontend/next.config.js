@@ -5,7 +5,8 @@ const nextConfig = {
     domains: [],
   },
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000',
+    NEXT_PUBLIC_API_URL:
+      process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000",
   },
   // Enable SWC minification
   swcMinify: true,
@@ -13,6 +14,6 @@ const nextConfig = {
   experimental: {
     optimizeCss: true,
   },
-}
+};
 
-module.exports = nextConfig
+module.exports = nextConfig;
