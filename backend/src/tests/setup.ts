@@ -1,12 +1,8 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
-import { createClient } from 'redis';
-import { RedisMemoryServer } from 'redis-memory-server';
 
 // Global test setup
 let mongoServer: MongoMemoryServer;
-let redisServer: RedisMemoryServer;
-let redisClient: any;
 
 beforeAll(async () => {
   // Setup in-memory MongoDB

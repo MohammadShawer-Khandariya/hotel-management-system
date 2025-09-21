@@ -2,10 +2,10 @@
     "name": "hotel-management-system",
     "version": "1.0.0",
     "description": "Scalable hotel operations management system with room management, guest tracking, and audit capabilities",
-    "main": "dist/index.js",
+    "main": "dist/src/index.js",
     "scripts": {
         "prestart": "pnpm build",
-        "start": "node dist/index.js",
+        "start": "node dist/src/index.js",
         "dev": "nodemon src/index.ts",
         "build": "tsc",
         "railway:build": "npm run build",
