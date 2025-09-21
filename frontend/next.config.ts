@@ -20,7 +20,7 @@ const nextConfig: NextConfig = {
   },
   
   // Output configuration for deployment
-  output: process.env.NODE_ENV === 'production' ? undefined : 'standalone',
+  output: 'standalone',
   
   // Disable strict mode to avoid double rendering issues during development
   reactStrictMode: true,
