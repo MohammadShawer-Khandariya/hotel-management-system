@@ -6,7 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "railway:build": "./build.sh",
+    "railway:start": "node server.js"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
